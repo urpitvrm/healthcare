@@ -6,7 +6,12 @@ const authService = {};
 
 // LOGIN SERVICE
 authService.login = async (username, password) => {
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [username]);
+    if (!username || !password) {
+        return { success: false, message: "Username and password are required" };
+    }
+
+    const email = username.toLowerCase();
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
     if (!rows.length) {
         return { success: false, message: "User not found" };
@@ -19,7 +24,7 @@ authService.login = async (username, password) => {
     }
 
     const token = jwt.sign(
-        { id: user.id, role: user.role },
+        { id: user.id, role: user.role, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
     );
@@ -29,7 +34,17 @@ authService.login = async (username, password) => {
 
 // SIGNUP SERVICE
 authService.signUp = async (username, password, role = "patient") => {
-    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [username]);
+    if (!username || !password) {
+        return { success: false, message: "Username and password are required" };
+    }
+
+    // Only allow patients to self-signup
+    if (role !== "patient") {
+        return { success: false, message: "Only patient signup is allowed" };
+    }
+
+    const email = username.toLowerCase();
+    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     if (existingUser.length) {
         return { success: false, message: "User already exists" };
     }
@@ -37,7 +52,7 @@ authService.signUp = async (username, password, role = "patient") => {
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.query(
         "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
-        [username, hashedPassword, role]
+        [email, hashedPassword, "patient"]
     );
 
     return { success: true };

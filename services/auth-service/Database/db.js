@@ -1,27 +1,41 @@
-const mysql = require("mysql2");
-require("dotenv").config(); // Ensure dotenv is loaded
+const mysql = require("mysql2/promise");
+require("dotenv").config();
 
-// Create a connection pool
-const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+async function initDB() {
+  try {
+    // Connect without specifying a database first
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST || "localhost",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      port: process.env.DB_PORT || 3306,
+    });
 
-// Test the connection
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("❌ Error connecting to the database:", err);
-  } else {
+    // Create database if not exists
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``);
+    console.log("✅ Database ensured");
+
+    await connection.end();
+
+    // Now create a pool connected to the database
+    const pool = mysql.createPool({
+      host: process.env.DB_HOST || "localhost",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME || "healthcare_auth",
+      port: process.env.DB_PORT || 3306,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+    });
+
     console.log("✅ Database connected successfully");
-    connection.release();
-  }
-});
-const promisePool = db.promise(); // Use promise-based pool for async/await
 
-module.exports = promisePool;
+    return pool;
+  } catch (err) {
+    console.error("❌ Error initializing DB:", err);
+    throw err;
+  }
+}
+
+module.exports = initDB;
