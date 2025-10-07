@@ -5,7 +5,7 @@ const authController = {};
 // LOGIN
 authController.login = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password } = req.query;
         const result = await authService.login(username, password);
 
         if (!result.success) {
@@ -26,8 +26,8 @@ authController.login = async (req, res) => {
 // SIGNUP
 authController.signUp = async (req, res) => {
     try {
-        const { username, password, role } = req.body;
-        const result = await authService.signUp(username, password, role);
+        const { name,username, password, role } = req.query;
+        const result = await authService.signUp(name,username, password, role);
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });

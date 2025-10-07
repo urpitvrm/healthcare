@@ -1,17 +1,19 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("../Database/db");
+const initDB = require("../Database/db");
 
 const authService = {};
 
 // LOGIN SERVICE
 authService.login = async (username, password) => {
+    const db = await initDB();  // ✅ ensure we have a connected pool
+
     if (!username || !password) {
         return { success: false, message: "Username and password are required" };
     }
 
     const email = username.toLowerCase();
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
 
     if (!rows.length) {
         return { success: false, message: "User not found" };
@@ -33,26 +35,29 @@ authService.login = async (username, password) => {
 };
 
 // SIGNUP SERVICE
-authService.signUp = async (username, password, role = "patient") => {
+authService.signUp = async (name, username, password, role = "patient") => {
+    const db = await initDB();  // ✅ ensure we have a connected pool
+
     if (!username || !password) {
         return { success: false, message: "Username and password are required" };
     }
 
-    // Only allow patients to self-signup
     if (role !== "patient") {
         return { success: false, message: "Only patient signup is allowed" };
     }
 
     const email = username.toLowerCase();
-    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
+
     if (existingUser.length) {
         return { success: false, message: "User already exists" };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     await db.query(
-        "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
-        [email, hashedPassword, "patient"]
+        "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",  // ✅ MySQL syntax
+        [name, email, hashedPassword, role]
     );
 
     return { success: true };
