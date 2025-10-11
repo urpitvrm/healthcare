@@ -1,19 +1,19 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const initDB = require("../Database/db");
+const pool = require("../Database/db");
 
 const authService = {};
 
 // LOGIN SERVICE
 authService.login = async (username, password) => {
-    const db = await initDB();  // ✅ ensure we have a connected pool
+    // const pool = await initDB();  // ✅ ensure we have a connected pool
 
     if (!username || !password) {
         return { success: false, message: "Username and password are required" };
     }
 
     const email = username.toLowerCase();
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
 
     if (!rows.length) {
         return { success: false, message: "User not found" };
@@ -36,7 +36,7 @@ authService.login = async (username, password) => {
 
 // SIGNUP SERVICE
 authService.signUp = async (name, username, password, role = "patient") => {
-    const db = await initDB();  // ✅ ensure we have a connected pool
+    // const pool = await initDB();  // ✅ ensure we have a connected pool
 
     if (!username || !password) {
         return { success: false, message: "Username and password are required" };
@@ -47,7 +47,7 @@ authService.signUp = async (name, username, password, role = "patient") => {
     }
 
     const email = username.toLowerCase();
-    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
+    const [existingUser] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
 
     if (existingUser.length) {
         return { success: false, message: "User already exists" };
@@ -55,7 +55,7 @@ authService.signUp = async (name, username, password, role = "patient") => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.query(
+    await pool.query(
         "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",  // ✅ MySQL syntax
         [name, email, hashedPassword, role]
     );

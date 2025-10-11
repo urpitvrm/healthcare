@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-
+const pool = require("./Database/db");
 const initDB = require("./Database/db");
 const { createSchema } = require("./models/User");
 const authRoutes = require("./routes/auth");
@@ -26,8 +26,8 @@ const PORT = process.env.PORT || 1234;
 
 (async () => {
   try {
-    const db = await initDB();   // initialize DB & get pool
-    await createSchema(db);      // create tables if needed
+      // initialize DB & get pool
+    await createSchema();      // create tables if needed
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`✅ Auth Service running at http://localhost:${PORT}`);

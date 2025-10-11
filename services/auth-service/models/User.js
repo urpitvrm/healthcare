@@ -1,7 +1,9 @@
-async function createSchema(db) {
+const pool = require("../Database/db");
+
+async function createSchema() {
   try {
     // Users Table
-    await db.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -15,7 +17,7 @@ async function createSchema(db) {
     `);
 
     // Licenses Table
-    await db.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS licenses (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
