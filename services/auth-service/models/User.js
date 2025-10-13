@@ -18,19 +18,39 @@ async function createSchema() {
 
     // Licenses Table
     await pool.query(`
-        CREATE TABLE IF NOT EXISTS patients (
+    CREATE TABLE IF NOT EXISTS patients (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL UNIQUE,  -- Added UNIQUE constraint to user_id
+      full_name VARCHAR(255) NOT NULL,
+      phone VARCHAR(20),
+      gender VARCHAR(20),
+      dob DATE,  -- Corrected data type for DOB to DATE
+      address TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+`);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS doctors (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        user_id INT NOT NULL UNIQUE,
         full_name VARCHAR(255) NOT NULL,
         phone VARCHAR(20),
-        gender VARCHAR(20),
-        dob VARCHAR(20),
-        address TEXT,
+        specialization VARCHAR(255),
+        experience_years INT,
+        hospital_name VARCHAR(255),
+        clinic_address TEXT,
+        consultation_fee DECIMAL(10,2),
+        bio TEXT,
+        profile_image VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-      ); `
-    );
+      );
+
+      `);
 
     console.log("✅ Database schema created successfully");
   } catch (err) {

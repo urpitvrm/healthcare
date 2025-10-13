@@ -70,12 +70,13 @@ authController.patientDetails = async (req, res) => {
 };
 authController.doctorDetails = async (req, res) => {
     try {
-        const { doctorId } = req.query;
-        const result = await authService.DoctorDetails(doctorId);
+        const {user_id,full_name,phone,specialization,experience_years ,hospital_name,clinic_address,consultation_fee ,bio ,profile_image,  } = req.body;
+        // const profile_image = req.file ? req.file.path : null; // Assuming you're using multer for file uploads
+        const result = await authService.DoctorDetails(user_id,full_name,phone,specialization,experience_years ,hospital_name,clinic_address,consultation_fee ,bio ,profile_image);
         if (!result.success) {
             return res.status(400).json({ message: result.message });
         }
-        res.status(200).json({ data: result.data });
+        res.status(200).json({ success:true ,message: result.message });
     } catch (error) {
         console.error("Error fetching doctor details:", error);
         res.status(500).json({ message: "Internal server error" });
