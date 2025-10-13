@@ -6,61 +6,73 @@ const authService = {};
 
 // LOGIN SERVICE
 authService.login = async (username, password) => {
-    // const pool = await initDB();  // ✅ ensure we have a connected pool
-
+  // const pool = await initDB();  // ✅ ensure we have a connected pool
+  try {
     if (!username || !password) {
-        return { success: false, message: "Username and password are required" };
+      return { success: false, message: "Username and password are required" };
     }
 
     const email = username.toLowerCase();
-    
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
+
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]); // ✅ MySQL syntax
 
     if (!rows.length) {
-        return { success: false, message: "User not found" };
+      return { success: false, message: "User not found" };
     }
 
     const user = rows[0];
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
-        return { success: false, message: "Invalid password" };
+      return { success: false, message: "Invalid password" };
     }
 
     const token = jwt.sign(
-        { id: user.id, role: user.role, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+      { id: user.id, role: user.role, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
     );
     return { success: true, token, role: user.role };
+  } catch (error) {
+    return { success: false, message: "Internal server error" };
+  }
 };
 
 // SIGNUP SERVICE
 authService.signUp = async (name, username, password, role = "patient") => {
-    // const pool = await initDB();  // ✅ ensure we have a connected pool
+  // const pool = await initDB();  // ✅ ensure we have a connected pool
 
+  try {
     if (!username || !password) {
-        return { success: false, message: "Username and password are required" };
+      return { success: false, message: "Username and password are required" };
     }
-
     if (role !== "patient") {
-        return { success: false, message: "Only patient signup is allowed" };
+      return { success: false, message: "Only patient signup is allowed" };
     }
 
     const email = username.toLowerCase();
-    const [existingUser] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
+    const [existingUser] = await pool.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    ); // ✅ MySQL syntax
 
     if (existingUser.length) {
-        return { success: false, message: "User already exists" };
+      return { success: false, message: "User already exists" };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
-        "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",  // ✅ MySQL syntax
-        [name, email, hashedPassword, role]
+      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)", // ✅ MySQL syntax
+      [name, email, hashedPassword, role]
     );
 
     return { success: true };
+  } catch (err) {
+    console.error("Error during signup:", err);
+    return { success: false, message: "Internal server error" };
+  }
 };
 
 module.exports = authService;

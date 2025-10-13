@@ -27,6 +27,7 @@ authController.login = async (req, res) => {
 authController.signUp = async (req, res) => {
     try {
         const { name,username, password, role } = req.query;
+        console.log("we are inside the signup page--------",name,username, password, role);
         const result = await authService.signUp(name,username, password, role);
 
         if (!result.success) {

@@ -16,4 +16,17 @@ otpController.sendOTP = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }   
 };
+otpController.verifyOTP = async (req, res) => {
+    try {
+        const { username, otp } = req.query;
+        const result = await otpService.verifyOTP(username, otp);
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+        res.status(200).json({ success:result.success ,message: "OTP verified successfully" });
+    } catch (error) {
+        console.error("Error during verifying OTP:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
 module.exports = otpController;
