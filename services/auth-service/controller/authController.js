@@ -1,6 +1,16 @@
 const authService = require('../service/authService');
 
 const authController = {};
+const dayjs = require("dayjs"); // Import dayjs to handle date formatting
+
+// Utility to convert date to MySQL format (YYYY-MM-DD)
+const formatDate = (dobString) => {
+    const formattedDob = dayjs(dobString, "DD-MM-YYYY").format("YYYY-MM-DD");
+    if (!dayjs(formattedDob).isValid()) {
+        throw new Error("Invalid date format");
+    }
+    return formattedDob;
+};
 
 // LOGIN
 authController.login = async (req, res) => {
@@ -37,6 +47,37 @@ authController.signUp = async (req, res) => {
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
         console.error("Error during signup:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+authController.patientDetails = async (req, res) => {
+    try {
+        
+        const {userId,full_name,dob,gender,address,phone_number} = req.body;
+        
+        console.log("we are inside the patient details page--------",userId,full_name,dob,gender,address,phone_number);
+
+        const result = await authService.PatientDetails(userId,full_name,dob,gender,address,phone_number);
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+        res.status(200).json({ message: result.message, data: result.data  });
+    } catch (error) {
+        console.error("Error fetching patient details:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }   
+};
+authController.doctorDetails = async (req, res) => {
+    try {
+        const { doctorId } = req.query;
+        const result = await authService.DoctorDetails(doctorId);
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+        res.status(200).json({ data: result.data });
+    } catch (error) {
+        console.error("Error fetching doctor details:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };

@@ -14,22 +14,23 @@ async function createSchema() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
-
     `);
 
     // Licenses Table
-    // await pool.query(`
-    //   CREATE TABLE IF NOT EXISTS licenses (
-    //     id INT AUTO_INCREMENT PRIMARY KEY,
-    //     user_id INT NOT NULL,
-    //     license_number VARCHAR(100) UNIQUE NOT NULL,
-    //     issued_by VARCHAR(255),
-    //     issue_date DATE,
-    //     expiry_date DATE,
-    //     is_valid BOOLEAN DEFAULT true,
-    //     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    //   )
-    // `);
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS patients (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        full_name VARCHAR(255) NOT NULL,
+        phone VARCHAR(20),
+        gender VARCHAR(20),
+        dob VARCHAR(20),
+        address TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ); `
+    );
 
     console.log("✅ Database schema created successfully");
   } catch (err) {
@@ -38,4 +39,3 @@ async function createSchema() {
 }
 
 module.exports = { createSchema };
-
