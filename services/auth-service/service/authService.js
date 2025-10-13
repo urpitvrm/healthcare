@@ -13,6 +13,7 @@ authService.login = async (username, password) => {
     }
 
     const email = username.toLowerCase();
+    
     const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);  // ✅ MySQL syntax
 
     if (!rows.length) {
@@ -30,7 +31,6 @@ authService.login = async (username, password) => {
         process.env.JWT_SECRET,
         { expiresIn: "1h" }
     );
-
     return { success: true, token, role: user.role };
 };
 
